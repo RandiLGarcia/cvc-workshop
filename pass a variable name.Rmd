@@ -4,7 +4,6 @@ author: "Randi Garcia"
 date: "6/23/2016"
 output: html_document
 ---
-change 
 
 ```{r}
 library(knitr)
