@@ -1,0 +1,16 @@
+---
+title: "CVC practice Day 4"
+author: "Randi Garcia"
+date: "6/23/2016"
+output: html_document
+---
+
+Just trying to commit something to github
+
+```{r}
+library(mosaic)
+library(babynames)
+
+head(babynames)
+```
+

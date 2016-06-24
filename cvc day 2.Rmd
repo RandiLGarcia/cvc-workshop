@@ -1,0 +1,164 @@
+---
+title: "CVC Workshop Notes (Tuesday)"
+author: "Randi Garcia"
+date: "6/20/2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+You can ask for all of the examples for a given function. 
+```{r}
+?boxplot
+example(boxplot)
+```
+
+#Kidsfeet exercises
+
+Question 1
+```{r}
+names(KidsFeet)
+
+boxplot(KidsFeet$length ~ KidsFeet$sex)
+boxplot(KidsFeet$width ~ KidsFeet$sex)
+
+histogram(~KidsFeet$length|KidsFeet$sex)
+histogram(KidsFeet$length)
+
+t.test(KidsFeet$length~KidsFeet$sex, mu=0, alt="two.sided", conf=0.95, var.eq=F, paired=F)
+```
+
+Boys' feet are  little bit longer, but their mean foot length is not significantly higher than girls. 
+
+
+Question 2: do boys and girls have differently shaped feet?
+```{r}
+table <- KidsFeet$biggerfoot
+barplot(table)
+summary(KidsFeet$biggerfoot)
+
+xyplot(KidsFeet$length ~ KidsFeet$width, group=KidsFeet$sex)
+
+```
+
+
+```{r}
+college_url <- "https://s3.amazonaws.com/ed-college-choice-public/Most+Recent+Cohorts+(All+Data+Elements).csv"
+college_data <- read_csv(college_url)
+
+library(readr)
+anscombeurl <- "http://cvc.mosaic-web.org/Summer2016/Learn/ImportingData/Anscombe.csv"
+anscombe <- read_csv(anscombeurl)
+
+```
+
+
+
+```{r}
+library(ggplot2)
+theme_set(theme_minimal())
+data("Births")
+data("Births78")
+
+ggplot(data=Births78, aes(x=date, y=births))+
+geom_point()
+
+ggplot(data=Births78, aes(x=date, y=births, color=wday))+
+geom_point()
+
+#alternative
+ggplot(data=Births78)+
+geom_point(aes(x=date, y=births, color=wday))
+
+#lines
+ggplot(data=Births78, aes(x=date, y=births, color=wday))+
+geom_point() + geom_line()
+
+ggplot(data=Births78, aes(x=date, y=births))+
+geom_point(color="navy")
+
+names(HELPrct)
+ggplot(data = HELPrct, aes(x = substance, color = racegrp))+
+  geom_bar()
+
+#there are gaps between the bars on this one
+ggplot(data = HELPrct, aes(x = age))+
+  geom_bar()
+#so we can use geom_histogram
+ggplot(data = HELPrct, aes(x = age))+
+  geom_histogram(binwidth = 2) #it defaulted to 30 bins, there were too many
+
+```
+
+
+exercise
+```{r}
+ggplot(data = HELPrct, aes(x = i1))+
+  geom_density()
+
+ggplot(data = HELPrct, aes(x = i1))+
+  geom_area(stat="bin", binwidth=10)
+
+ggplot(data = HELPrct, aes(x = i1))+
+  geom_line(stat="bin", binwidth=10)
+
+```
+
+
+```{r}
+library(mosaic)
+library(babynames)
+library(NHANES)
+
+SmallSubset <-
+  babynames %>%
+  filter(year > 2000) %>%
+  sample_n(size = 200)
+
+head(SmallSubset)
+
+SmallSubset %>%
+  summarise(total = sum(n))
+
+SmallSubset %>%
+  group_by(year) %>%
+  summarise(name_count = n_distinct(name))
+
+SmallSubset %>%
+  group_by(year, sex) %>%
+  summarise(n_distinct(name))
+
+###?????Error: n does not take arguments
+SmallSubset %>%
+  group_by(year, sex) %>%
+  summarise(n())
+
+result <- 
+  babynames %>%
+  filter(name %in% c("Jane", "Mary")) %>%
+  group_by(year, name) %>%
+  summarise(count = sum(n))
+
+head(result)
+
+ggplot(data=result, aes(x=year, y=count, color=name))+
+  geom_point(size=2)
+
+ggplot(data=result, aes(x=year, y=count, color=name))+
+  geom_line(size=2)+
+  ylab("Yearly Births")
+
+ggplot(data=result, aes(x=year, y=count, color=name))+
+  geom_area(fill)+
+  ylab("Yearly Births")
+
+?geom_area
+
+glimpse(babynames)
+
+```
+
+

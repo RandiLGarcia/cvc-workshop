@@ -1,0 +1,135 @@
+---
+title: "Minimal Example--Issues Passing dpylr Variable Names"
+author: "Randi Garcia"
+date: "6/23/2016"
+output: html_document
+---
+
+
+```{r}
+library(knitr)
+opts_chunk$set(message=FALSE, warning=FALSE, eval=FALSE)
+```
+
+
+## Original Problem
+
+Below is a broken function for mapping services needed. 
+
+```{r}
+library(mosaic)
+load("~/cvc-workshop/perpnew.Rda")
+
+mapPriority <- function(data, sneed = "Medical", vari, colr = "red"){
+  
+  propneed <- data %>%
+    filter(state != "N/") %>%
+    group_by(state) %>%
+    summarise(total = n(), need = sum(vari == "(1) Yes")) %>%
+    mutate(prop = need/total)
+
+  mUSMap(propneed, key="state", fill = "prop")+
+    scale_fill_continuous(low="white", high = colr)+
+    ggtitle(paste("Proportion of State", sneed, "Need"))
+
+}
+
+mapPriority(data = perpnew, sneed = "Medical", vari = "FU6P1", colr = "red")
+```
+
+Notice that even if we change the variable (`FU6P1` to `FU6P2`), the map doesn't change. 
+
+```{r}
+mapPriority(data = perpnew, sneed = "Medical", vari = "FU6P2", colr = "red")
+```
+
+But if we add in the `mutate_` function, it does change as expected.
+
+```{r}
+mapPriority <- function(data, sneed = "Medical", vari, colr = "red"){
+  
+
+  propneed <- data %>%
+    mutate_(vari=vari) %>%
+    filter(state != "N/") %>%
+    group_by(state) %>%
+    summarise( need = sum(vari == "(1) Yes"))
+  return(propneed) %>%
+mutate(prop = need/total)
+
+  mUSMap(propneed, key="state", fill = "prop")+
+    scale_fill_continuous(low="white", high = colr)+
+    ggtitle(paste("Proportion of State", sneed, "Need"))
+
+}
+
+
+mapPriority(data = perpnew, sneed = "Medical", vari = "FU6P5", colr = "red")
+mapPriority(data = perpnew, sneed = "Medical", vari = "FU6P2", colr = "red")
+```
+
+The title change and map color change now work fine. 
+
+The issue, as I understand it, is with getting summarise() to recogize "vari" as a variable name in "data". The function summarise() is taking a standard function, n(), and a nonstandard function, sum(). Hypothetically, if we could use summarise_(sum(vari)) and summarise(n()) separately, we'd be OK, but we cannot do that because we want to perform those two function on the same tbl. 
+
+
+## Minimal Example with KidsFeet Data
+Because the data from the original example isn't publically available, so we'll make a minimal reproducible example. 
+
+```{r, eval=TRUE}
+library(mosaic)
+
+domRights <- function(df, v){
+
+  df %>%
+    group_by(sex) %>%
+    mutate(sampsize = n(), rights = v == "R") %>%
+    select(name, sex, sampsize, rights)
+  
+    summarise(sampsize = n(), rights = sum(var == "R"))
+}
+```
+
+Here are some simple tallies to see what we would expect for number of right bigger feet and right dominate hand for boys and girls separately. 
+
+```{r, eval=TRUE}
+#for expected number of rights
+tally(~biggerfoot|sex, data=KidsFeet)
+tally(~domhand|sex, data=KidsFeet)
+
+```
+
+But here is what we get using the broken function above. 
+
+```{r, eval=TRUE}
+domRights(KidsFeet, "biggerfoot")
+domRights(KidsFeet, "domhand")
+```
+
+But it's fixed if we add the `mutate_` function.
+
+```{r, eval=TRUE}
+domRights <- function(df, var){
+  
+  df %>%
+    mutate_(var=var) %>%
+    group_by(sex) %>%
+    summarise(sampsize = n(), rights = sum(var == "R"))
+  
+}
+
+domRights(KidsFeet, "biggerfoot")
+domRights(KidsFeet, "domhand")
+```
+
+```{r}
+foo <- function(v) {
+  KidsFeet %>% 
+    group_by(sex) %>%
+    summarise_( rights = sum( v == "R"))
+}
+foo("domhand")    
+
+```
+
+
