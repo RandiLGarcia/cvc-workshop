@@ -5,11 +5,10 @@ date: "6/23/2016"
 output: html_document
 ---
 
-```{r}
+```{r, echo=FALSE}
 library(knitr)
 opts_chunk$set(message=FALSE, warning=FALSE, eval=FALSE)
 ```
-
 
 ## Original Problem
 
@@ -47,14 +46,12 @@ But if we add in the `mutate_` function, it does change as expected.
 ```{r}
 mapPriority <- function(data, sneed = "Medical", vari, colr = "red"){
   
-
   propneed <- data %>%
     mutate_(vari=vari) %>%
     filter(state != "N/") %>%
     group_by(state) %>%
-    summarise( need = sum(vari == "(1) Yes"))
-  return(propneed) %>%
-mutate(prop = need/total)
+    summarise(total = n(), need = sum(vari == "(1) Yes")) %>%
+    mutate(prop = need/total)
 
   mUSMap(propneed, key="state", fill = "prop")+
     scale_fill_continuous(low="white", high = colr)+
@@ -78,13 +75,10 @@ Because the data from the original example isn't publically available, so we'll 
 ```{r, eval=TRUE}
 library(mosaic)
 
-domRights <- function(df, v){
-
+domRights <- function(df, var){
+  
   df %>%
     group_by(sex) %>%
-    mutate(sampsize = n(), rights = v == "R") %>%
-    select(name, sex, sampsize, rights)
-  
     summarise(sampsize = n(), rights = sum(var == "R"))
 }
 ```
@@ -119,16 +113,6 @@ domRights <- function(df, var){
 
 domRights(KidsFeet, "biggerfoot")
 domRights(KidsFeet, "domhand")
-```
-
-```{r}
-foo <- function(v) {
-  KidsFeet %>% 
-    group_by(sex) %>%
-    summarise_( rights = sum( v == "R"))
-}
-foo("domhand")    
-
 ```
 
 
